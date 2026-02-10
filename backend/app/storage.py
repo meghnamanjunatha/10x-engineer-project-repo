@@ -11,20 +11,20 @@ from datetime import datetime
 
 class Storage:
     def __init__(self):
-        self._prompts: Dict[str, Prompt] = {}
-        self._collections: Dict[str, Collection] = {}
+        self.prompts = {}  # Add this line
+        self.collections = {}
     
     # ============== Prompt Operations ==============
     
     def create_prompt(self, prompt: Prompt) -> Prompt:
-        self._prompts[prompt.id] = prompt
+        self.prompts[prompt.id] = prompt
         return prompt
     
     def get_prompt(self, prompt_id: str) -> Optional[Prompt]:
-        return self._prompts.get(prompt_id)
+        return self.prompts.get(prompt_id)
     
     def get_all_prompts(self) -> List[Prompt]:
-        return list(self._prompts.values())
+        return list(self.prompts.values())
     
     def update_prompt(self, prompt_id: str, update_data: dict) -> Optional[Prompt]:
         prompt = self.prompts.get(prompt_id)
@@ -42,22 +42,22 @@ class Storage:
         return prompt
     
     def delete_prompt(self, prompt_id: str) -> bool:
-        if prompt_id in self._prompts:
-            del self._prompts[prompt_id]
+        if prompt_id in self.prompts:
+            del self.prompts[prompt_id]
             return True
         return False
     
     # ============== Collection Operations ==============
     
     def create_collection(self, collection: Collection) -> Collection:
-        self._collections[collection.id] = collection
+        self.collections[collection.id] = collection
         return collection
     
     def get_collection(self, collection_id: str) -> Optional[Collection]:
-        return self._collections.get(collection_id)
+        return self.collections.get(collection_id)
     
     def get_all_collections(self) -> List[Collection]:
-        return list(self._collections.values())
+        return list(self.collections.values())
     
     def delete_collection(self, collection_id: str) -> bool:
         collection = self.collections.get(collection_id)
@@ -93,13 +93,13 @@ class Storage:
         return True
     
     def get_prompts_by_collection(self, collection_id: str) -> List[Prompt]:
-        return [p for p in self._prompts.values() if p.collection_id == collection_id]
+        return [p for p in self.prompts.values() if p.collection_id == collection_id]
     
     # ============== Utility ==============
     
     def clear(self):
-        self._prompts.clear()
-        self._collections.clear()
+        self.prompts.clear()
+        self.collections.clear()
 
 
 # Global storage instance
