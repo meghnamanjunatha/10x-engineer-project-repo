@@ -60,10 +60,37 @@ class Storage:
         return list(self._collections.values())
     
     def delete_collection(self, collection_id: str) -> bool:
-        if collection_id in self._collections:
-            del self._collections[collection_id]
-            return True
-        return False
+        collection = self.collections.get(collection_id)
+        if not collection:
+            return False
+
+        # remove the collection
+        del self.collections[collection_id]
+
+        # Clear collection_id from any prompts that referenced this collection
+        for pid, prompt in list(self.prompts.items()):
+            # support Pydantic models and plain dicts
+            if isinstance(prompt, dict):
+                coll = prompt.get("collection_id")
+                if coll == collection_id:
+                    prompt["collection_id"] = None
+                    prompt["updated_at"] = datetime.utcnow().isoformat()
+                    self.prompts[pid] = prompt
+            else:
+                coll = getattr(prompt, "collection_id", None)
+                if coll == collection_id:
+                    try:
+                        setattr(prompt, "collection_id", None)
+                        setattr(prompt, "updated_at", datetime.utcnow().isoformat())
+                        self.prompts[pid] = prompt
+                    except Exception:
+                        # fallback: replace with a shallow dict
+                        pd = getattr(prompt, "model_dump", lambda: prompt.__dict__)()
+                        pd["collection_id"] = None
+                        pd["updated_at"] = datetime.utcnow().isoformat()
+                        self.prompts[pid] = pd
+
+        return True
     
     def get_prompts_by_collection(self, collection_id: str) -> List[Prompt]:
         return [p for p in self._prompts.values() if p.collection_id == collection_id]
