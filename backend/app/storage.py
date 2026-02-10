@@ -31,15 +31,19 @@ class Storage:
         if not prompt:
             return None
 
-        # apply updates (only changing fields provided)
-        prompt.title = update_data.get("title", prompt.title)
-        prompt.template = update_data.get("template", prompt.template)
-        prompt.tags = update_data.get("tags", prompt.tags)
-        # ensure updated_at is refreshed
-        prompt.updated_at = datetime.utcnow().isoformat()
+        # Convert Pydantic model to dict if needed
+        if hasattr(prompt, "model_dump"):
+            prompt_dict = prompt.model_dump()
+        else:
+            prompt_dict = prompt.__dict__ if not isinstance(prompt, dict) else prompt
 
-        self.prompts[prompt_id] = prompt
-        return prompt
+        # Apply updates
+        prompt_dict.update(update_data)
+
+        # Reconstruct Prompt object
+        updated_prompt = Prompt(**prompt_dict)
+        self.prompts[prompt_id] = updated_prompt
+        return updated_prompt
     
     def delete_prompt(self, prompt_id: str) -> bool:
         if prompt_id in self.prompts:
