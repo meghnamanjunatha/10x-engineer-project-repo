@@ -6,6 +6,7 @@ In a production environment, this would be replaced with a database.
 
 from typing import Dict, List, Optional
 from app.models import Prompt, Collection
+from datetime import datetime
 
 
 class Storage:
@@ -25,10 +26,19 @@ class Storage:
     def get_all_prompts(self) -> List[Prompt]:
         return list(self._prompts.values())
     
-    def update_prompt(self, prompt_id: str, prompt: Prompt) -> Optional[Prompt]:
-        if prompt_id not in self._prompts:
+    def update_prompt(self, prompt_id: str, update_data: dict) -> Optional[Prompt]:
+        prompt = self.prompts.get(prompt_id)
+        if not prompt:
             return None
-        self._prompts[prompt_id] = prompt
+
+        # apply updates (only changing fields provided)
+        prompt.title = update_data.get("title", prompt.title)
+        prompt.template = update_data.get("template", prompt.template)
+        prompt.tags = update_data.get("tags", prompt.tags)
+        # ensure updated_at is refreshed
+        prompt.updated_at = datetime.utcnow().isoformat()
+
+        self.prompts[prompt_id] = prompt
         return prompt
     
     def delete_prompt(self, prompt_id: str) -> bool:
