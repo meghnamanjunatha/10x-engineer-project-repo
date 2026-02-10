@@ -45,18 +45,22 @@ def list_prompts(
     collection_id: Optional[str] = None,
     search: Optional[str] = None
 ):
-    prompts = storage.get_all_prompts()
+    prompts = list(storage.prompts.values())
     
-    # Filter by collection if specified
+    # Filter by collection if provided
     if collection_id:
-        prompts = filter_prompts_by_collection(prompts, collection_id)
+        prompts = [p for p in prompts if getattr(p, "collection_id", None) == collection_id]
     
-    # Search if query provided
+    # Filter by search term if provided
     if search:
-        prompts = search_prompts(prompts, search)
+        search_lower = search.lower()
+        prompts = [
+            p for p in prompts 
+            if search_lower in getattr(p, "title", "").lower() 
+            or search_lower in getattr(p, "template", "").lower()
+        ]
     
-    # Sort by date (newest first)
-    # Note: There might be an issue with the sorting...
+    # Sort newest first
     prompts = sort_prompts_by_date(prompts, descending=True)
     
     return PromptList(prompts=prompts, total=len(prompts))

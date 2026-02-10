@@ -6,31 +6,15 @@ from datetime import datetime
 
 
 def sort_prompts_by_date(prompts: List[Any], descending: bool = True):
-    """Sort a list of prompts (Pydantic models or dicts) by updated_at (fallback to created_at).
-    Returns newest first when descending=True.
-    """
-
+    """Sort prompts by updated_at (newest first when descending=True)."""
     def _get_ts(p):
-        # handle Pydantic BaseModel or plain dict
-        if hasattr(p, "updated_at"):
-            ts = getattr(p, "updated_at")
-        elif isinstance(p, dict):
-            ts = p.get("updated_at") or p.get("created_at")
-        else:
-            # try attribute access fallback
-            ts = getattr(p, "created_at", None)
-
-        if not ts:
-            return datetime.min
-
-        # ISO format expected; try parsing safely
-        try:
-            return datetime.fromisoformat(ts)
-        except Exception:
+        ts = getattr(p, "updated_at", None) or getattr(p, "created_at", None)
+        if isinstance(ts, str):
             try:
-                return datetime.fromtimestamp(float(ts))
-            except Exception:
+                return datetime.fromisoformat(ts)
+            except:
                 return datetime.min
+        return ts or datetime.min
 
     return sorted(prompts, key=_get_ts, reverse=descending)
 
