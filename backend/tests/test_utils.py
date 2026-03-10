@@ -120,7 +120,7 @@ def test_extract_variables():
     assert extracted_variables == ["variable"]
 
     # Test with multiple variables
-    content_with_multiple the task._variables = "This {{template}} has {{several}} {{variables}}."
+    content_with_multiple_variables = "This {{template}} has {{several}} {{variables}}."
     extracted_variables = extract_variables(content_with_multiple_variables)
     assert extracted_variables == ["template", "several", "variables"]
 
